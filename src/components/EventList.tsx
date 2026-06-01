@@ -15,6 +15,8 @@ interface ApiResponse {
   count: number;
 }
 
+const FILTERS_KEY = "crypto-events:filters";
+
 const DEFAULT_FILTERS: FilterState = {
   scales: [],
   countries: [],
@@ -22,11 +24,23 @@ const DEFAULT_FILTERS: FilterState = {
   query: "",
   online: false,
   showFavoritesOnly: false,
+  showManualOnly: false,
 };
+
+function loadFilters(): FilterState {
+  try {
+    const raw = localStorage.getItem(FILTERS_KEY);
+    if (!raw) return DEFAULT_FILTERS;
+    return { ...DEFAULT_FILTERS, ...(JSON.parse(raw) as Partial<FilterState>) };
+  } catch {
+    return DEFAULT_FILTERS;
+  }
+}
 
 export function EventList() {
   const [data, setData] = useState<ApiResponse>({ events: [], countries: [], tokens: [], count: 0 });
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
+  const [filtersLoaded, setFiltersLoaded] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,6 +48,20 @@ export function EventList() {
   const [showAddModal, setShowAddModal] = useState(false);
   const { rsvps, comments, counts } = useFavorites();
   const { theme, toggle } = useTheme();
+
+  useEffect(() => {
+    setFilters(loadFilters());
+    setFiltersLoaded(true);
+  }, []);
+
+  const handleFiltersChange = (next: FilterState) => {
+    setFilters(next);
+    try {
+      localStorage.setItem(FILTERS_KEY, JSON.stringify(next));
+    } catch {
+      /* ignore */
+    }
+  };
 
   const fetchEvents = async () => {
     setLoading(true);
@@ -58,9 +86,10 @@ export function EventList() {
   };
 
   useEffect(() => {
+    if (!filtersLoaded) return;
     void fetchEvents();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters]);
+  }, [filters, filtersLoaded]);
 
   const triggerRefresh = async () => {
     setRefreshing(true);
@@ -87,9 +116,15 @@ export function EventList() {
   };
 
   const displayed = useMemo(() => {
-    if (!filters.showFavoritesOnly) return data.events;
-    return data.events.filter((e) => e.id in rsvps || (comments[e.id]?.length ?? 0) > 0);
-  }, [data.events, filters.showFavoritesOnly, rsvps, comments]);
+    let result = data.events;
+    if (filters.showFavoritesOnly) {
+      result = result.filter((e) => e.id in rsvps || (comments[e.id]?.length ?? 0) > 0);
+    }
+    if (filters.showManualOnly) {
+      result = result.filter((e) => e.source === "manual");
+    }
+    return result;
+  }, [data.events, filters.showFavoritesOnly, filters.showManualOnly, rsvps, comments]);
 
   const grouped = useMemo(() => {
     const map = new Map<string, CryptoEvent[]>();
@@ -152,7 +187,7 @@ export function EventList() {
       <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
         <Filters
           state={filters}
-          onChange={setFilters}
+          onChange={handleFiltersChange}
           availableCountries={data.countries}
           availableTokens={data.tokens}
           totalCount={displayed.length}

@@ -9,6 +9,7 @@ export interface FilterState {
   query: string;
   online: boolean;
   showFavoritesOnly: boolean;
+  showManualOnly: boolean;
 }
 
 interface Props {
@@ -42,7 +43,15 @@ export function Filters({ state, onChange, availableCountries, availableTokens, 
   };
 
   const reset = () =>
-    onChange({ scales: [], countries: [], tokens: [], query: "", online: false, showFavoritesOnly: false });
+    onChange({
+      scales: [],
+      countries: [],
+      tokens: [],
+      query: "",
+      online: false,
+      showFavoritesOnly: false,
+      showManualOnly: false,
+    });
 
   return (
     <aside className="bg-panel dark:bg-panel-dark border border-border dark:border-border-dark rounded-lg p-4 space-y-5 text-sm">
@@ -140,7 +149,7 @@ export function Filters({ state, onChange, availableCountries, availableTokens, 
         </div>
       )}
 
-      <div>
+      <div className="space-y-2">
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
@@ -149,6 +158,18 @@ export function Filters({ state, onChange, availableCountries, availableTokens, 
             className="accent-accent"
           />
           Только мои отметки
+        </label>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={state.showManualOnly}
+            onChange={(e) => onChange({ ...state, showManualOnly: e.target.checked })}
+            className="accent-accent"
+          />
+          <span>
+            Только{" "}
+            <span className="text-violet-400 font-medium">добавленные мной</span>
+          </span>
         </label>
       </div>
 
