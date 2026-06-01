@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(npm install 2>&1)",
+      "PowerShell($node = Get-Command node -ErrorAction SilentlyContinue; if \\($node\\) { \"node: $\\($node.Source\\) $\\(& node --version\\)\" } else { \"node not in PATH\" }; $npm = Get-Command npm -ErrorAction SilentlyContinue; if \\($npm\\) { \"npm: $\\($npm.Source\\)\" } else { \"npm not in PATH\" }; Write-Output \"---\"; Write-Output \"Checking common install paths:\"; @\\(\"C:\\\\Program Files\\\\nodejs\", \"C:\\\\Program Files \\(x86\\)\\\\nodejs\", \"$env:LOCALAPPDATA\\\\Programs\\\\nodejs\", \"$env:APPDATA\\\\npm\"\\) | ForEach-Object { if \\(Test-Path $_\\) { \"FOUND: $_\" } })",
+      "PowerShell($node = Get-Command node -ErrorAction SilentlyContinue; $npm = Get-Command npm -ErrorAction SilentlyContinue; if \\($node\\) { \"node: $\\(& node --version\\)\" } else { \"node still not in PATH — restart terminal?\" }; if \\($npm\\) { \"npm: $\\(& npm --version\\)\" } else { \"npm still not in PATH\" })"
+    ]
+  }
+}
