@@ -22,9 +22,11 @@ export async function GET(req: Request) {
     online: sp.get("online") === "true",
   };
 
-  const events = queryEvents(filters);
-  const countries = getAllCountries();
-  const tokens = getAllTokens();
+  const [events, countries, tokens] = await Promise.all([
+    queryEvents(filters),
+    getAllCountries(),
+    getAllTokens(),
+  ]);
 
   return NextResponse.json({ events, countries, tokens, count: events.length });
 }
@@ -61,7 +63,7 @@ export async function POST(req: Request) {
       fetched_at: new Date().toISOString(),
     };
 
-    upsertEvent(event);
+    await upsertEvent(event);
     return NextResponse.json({ ok: true, id });
   } catch (e) {
     return NextResponse.json({ ok: false, error: String(e) }, { status: 500 });

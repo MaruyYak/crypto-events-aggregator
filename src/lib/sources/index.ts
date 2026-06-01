@@ -29,26 +29,26 @@ export async function refreshAll(): Promise<RefreshResult[]> {
     try {
       const events = await src.fetch();
       for (const ev of events) {
-        const res = upsertEvent(ev);
+        const res = await upsertEvent(ev);
         if (res === "inserted") added++;
         else updated++;
       }
-      logRefresh(src.name, added, updated, true);
+      await logRefresh(src.name, added, updated, true);
       results.push({ source: src.name, ok: true, added, updated });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      logRefresh(src.name, added, updated, false, msg);
+      await logRefresh(src.name, added, updated, false, msg);
       results.push({ source: src.name, ok: false, added, updated, error: msg });
     }
   }
 
   let seeded = 0;
   for (const ev of getSeedEvents()) {
-    const res = upsertEvent(ev);
+    const res = await upsertEvent(ev);
     if (res === "inserted") seeded++;
   }
   if (seeded > 0) {
-    logRefresh("seed", seeded, 0, true);
+    await logRefresh("seed", seeded, 0, true);
     results.push({ source: "seed", ok: true, added: seeded, updated: 0 });
   }
 
