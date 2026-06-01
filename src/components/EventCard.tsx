@@ -69,7 +69,13 @@ export function EventCard({ event, onDelete }: { event: CryptoEvent; onDelete?: 
             <span className={`text-xs font-semibold px-2 py-0.5 rounded border ${scaleColor[event.scale]}`}>
               {scaleLabel[event.scale]}
             </span>
-            <span className="text-xs text-muted dark:text-muted-dark uppercase tracking-wide">{event.source}</span>
+            {event.source === "manual" ? (
+              <span className="text-xs font-semibold px-2 py-0.5 rounded border bg-violet-500/20 text-violet-300 border-violet-500/30">
+                добавлено мной
+              </span>
+            ) : (
+              <span className="text-xs text-muted dark:text-muted-dark uppercase tracking-wide">{event.source}</span>
+            )}
             {event.tokens.slice(0, 4).map((t) => (
               <span key={t} className="text-xs bg-panel2 dark:bg-panel2-dark border border-border dark:border-border-dark rounded px-1.5 py-0.5 text-muted dark:text-muted-dark">
                 {t}
